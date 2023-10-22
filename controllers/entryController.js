@@ -1,15 +1,17 @@
 
 import { UserModel, CategoryModel, EntryModel } from '../db.js'; 
+import asyncHandler from "express-async-handler"
 
 // @desc Get entries
 // @route Get /entries
 // @access Private
-const getEntries = async (req, res) => res.send(await EntryModel.find().populate({ path: 'category', select: ['name', 'description']}).populate({ path: 'user', select: ['username', 'email']}))
+const getEntries = asyncHandler(async (req, res) => 
+  res.send(await EntryModel.find().populate({ path: 'category', select: ['name',        'description']}).populate({ path: 'user', select: ['username', 'email']})))
 
 // @desc Get one entry by id
 // @route Get /entries/:id
 // @access Private
-const getOneEntry = async (req, res) => {  
+const getOneEntry = asyncHandler(async (req, res) => {  
   try { // We can find and update in one step. Fetch an object with that ID and update the entry
     const entry = await EntryModel.findById(req.params.id).populate('category').populate('user');
     if (entry) { 
@@ -21,15 +23,18 @@ const getOneEntry = async (req, res) => {
   catch (err) {
     res.status(500).send({ error: err.message }); 
   }
-}
+})
 
 // Add a new entry 
 // @desc POST one entry
 // @route POST /entries/
 // @access Private 
-const addEntry = async (req, res) => { 
-  try {
+const addEntry = asyncHandler(async (req, res) => { 
     // Create a new entry object with values passed in from the request
+    if (!req.body.category) {
+      res.status(400)
+      throw new Error('Please enter a category field')
+    };
     const { category, content, user} = req.body  //destrcutre out the fields you are expecting. 
     const userObject =  await UserModel.findOne({username: user })
     const categoryObject =  await CategoryModel.findOne({name: category })
@@ -38,16 +43,12 @@ const addEntry = async (req, res) => {
     await insertedEntry.populate({ path: 'category', select: 'name' });
     await insertedEntry.populate({ path: 'user', select: 'username' });
     res.status(201).send(insertedEntry)
-  }
-  catch (err) {
-    res.status(500).send({ error: err.message });
-  }
-}
+})
 
 // @desc Update one entry by id
 // @route PUT /entries/:id
 // @access Private
-const updateEntry = async (req, res) => { 
+const updateEntry = asyncHandler(async (req, res) => { 
   const { category, content, user} = req.body  
   const categoryObject =  await CategoryModel.findOne({name: category })
   const userObject =  await UserModel.findOne({username: user })
@@ -65,12 +66,12 @@ const updateEntry = async (req, res) => {
   catch (err) {
     res.status(500).send({ error: err.message }); //If something else goes wrong other than being unable to find the entry such as if we lose network or database connection it will throw an exception. It will catch the error and return a 500 error. 
   }
-}
+})
 
 // @desc Delete one entry based on id
 // @route DELETE /entries/:id
 // @access Private
-const deleteEntry = async (req, res) => { 
+const deleteEntry = asyncHandler(async (req, res) => { 
   try {
     const entry = await EntryModel.findByIdAndDelete(req.params.id) 
     if (entry) { // if the entry is truthy
@@ -82,7 +83,7 @@ const deleteEntry = async (req, res) => {
   catch (err) {
     res.status(500).send({ error: err.message }); //If something else goes wrong other than being unable to find the entry such as if we lose network or database connection it will throw an exception. It will catch the error and return a 500 error. 
   }
-}
+})
 
 
 export { getEntries, getOneEntry, addEntry, updateEntry, deleteEntry } 

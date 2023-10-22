@@ -1,4 +1,5 @@
 import express from 'express' // Add "type": "module", to the package.json for this to work.
+import { errorHandler } from './middleware/errorMiddleware.js'
 import entryRoutes from './routes/entry_routes.js' // The name of default export can be anything and made more relevant to the context it's used in.  In this case we renames router to entryRoutes.
 import categoryRoutes from './routes/category_routes.js'
 import gratitudeRoutes from './routes/gratitude_routes.js'
@@ -27,5 +28,6 @@ app.use('/users', userRoutes)
 
 app.get('/', (req, res) => res.send({ info: "Journal" })) // request encapulates the data about the request such as the URL, body, headers, http method, ect. The response object can be used to send a response back to the client. In the response object is a method called send, if I don't set a specific status it will send 200.  
 
+app.use(errorHandler)
 
 app.listen(port, () => console.log(`App running at http://localhost:${port}/`)) // launch the server, connect to the port and listen on the port for incoming connections. It will then execute the optional callback function which provides feedback to the console that the app is running and where. 
