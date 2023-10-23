@@ -1,21 +1,15 @@
 import express from 'express';
-import { UserModel } from '../db.js';
-
+import { UserModel } from '../models/userModel.js';
+import { registerUser, loginUser, getMe, getUsers } from '../controllers/userController.js';
+import { protect } from '../middleware/authMiddleware.js'
 const router = express.Router();
 
 //Get all users
-router.get('/', async (req, res) => res.status(200).send(await UserModel.find()))
+router.route('/').get(getUsers).post(registerUser)
 
-router.post('/', async (req, res) => { 
-  try {
-    const { username, email, password} = req.body    
-    const newUser = { username, email,password } 
-    const insertedUser = await UserModel.create(newUser) 
-    res.status(201).send(insertedUser)
-  }
-  catch (err) {
-    res.status(500).send({ error: err.message });
-  }
-})
+router.post('/login', loginUser)
+
+router.get('/me', protect, getMe)
+
 
 export default router 

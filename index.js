@@ -5,6 +5,7 @@ import categoryRoutes from './routes/category_routes.js'
 import gratitudeRoutes from './routes/gratitude_routes.js'
 
 import userRoutes from './routes/user_routes.js'
+import colors from 'colors'
 
 import dotenv from 'dotenv'
 import cors from 'cors'

@@ -1,5 +1,7 @@
 import express from 'express';
-import { UserModel, GratitudeModel, CategoryModel } from '../db.js'
+import { GratitudeModel, CategoryModel } from '../db.js'
+import { UserModel } from '../models/userModel.js';
+
 
 const router = express.Router()
 
