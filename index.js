@@ -1,6 +1,6 @@
 import express from 'express' // Add "type": "module", to the package.json for this to work.
 import { errorHandler } from './middleware/errorMiddleware.js'
-import entryRoutes from './routes/entry_routes.js' // The name of default export can be anything and made more relevant to the context it's used in.  In this case we renames router to entryRoutes.
+import affirmationRoutes from './routes/affirmation_routes.js' // The name of default export can be anything and made more relevant to the context it's used in.  In this case we renames router to affirmationRoutes.
 import categoryRoutes from './routes/category_routes.js'
 import gratitudeRoutes from './routes/gratitude_routes.js'
 
@@ -19,7 +19,7 @@ app.use(cors())
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json()) // middleware that parses JSON into an actual JS object. If something passed in isn't JSON it will ignore it and change nothing.  It does this before it even checks the routes. By the time any routes are processed req.body is accessable. This needs to be placed before any routes. 
-app.use('/entries', entryRoutes) // Use this router object and the routes within it whenever it matches the base url of /entries. The middleware will only run if the URL starts with /entries. 
+app.use('/affirmations', affirmationRoutes) // Use this router object and the routes within it whenever it matches the base url of /affirmations. The middleware will only run if the URL starts with /affirmations. 
 app.use('/categories', categoryRoutes)
 app.use('/gratitudes', gratitudeRoutes)
 

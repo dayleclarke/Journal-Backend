@@ -1,10 +1,10 @@
 import bcrypt from 'bcryptjs'
-import { CategoryModel, EntryModel, GratitudeModel, dbClose } from './db.js'
+import { CategoryModel, AffirmationModel, GratitudeModel, dbClose } from './db.js'
 import { UserModel } from './models/userModel.js'
 
-// Delete the existing entries in our database. 
-await EntryModel.deleteMany() 
-console.log('Deleted all entries in the Journal database')
+// Delete the existing affirmations in our database. 
+await AffirmationModel.deleteMany() 
+console.log('Deleted all affirmations in the Journal database')
 
 await CategoryModel.deleteMany()
 console.log('Deleted all categories in the Journal database')
@@ -37,8 +37,8 @@ const categoriesArray = [
 const cats = await CategoryModel.insertMany(categoriesArray)  
 console.log('Inserted Categories')
 
-//Again we store the data for each entry in an array of objects. Now instead of a hard-coded string for the category we use square brackets to specify which object in the cats array to use. cats[0] refers to the first category in the cats array. 
-const entries = [
+//Again we store the data for each affirmation in an array of objects. Now instead of a hard-coded string for the category we use square brackets to specify which object in the cats array to use. cats[0] refers to the first category in the cats array. 
+const affirmations = [
     { category: cats[0], user: users[0], content: "I am confident in my knowledge, skills and abilities, and I bring value to my workplace."},
     { category: cats[0], user: users[1], content: "I am open to new opportunities and welcome positive changes in my career."},
     { category: cats[0], user: users[0], content: "I trust in my capacity to learn, grow, and adapt in my career."},
@@ -104,8 +104,8 @@ const entries = [
     { category: cats[1], user: users[1], content: "I am committed to building and nurturing strong, fulfilling relationships."},
 ]
 
-await EntryModel.insertMany(entries)
-console.log('Inserted Entries')
+await AffirmationModel.insertMany(affirmations)
+console.log('Inserted Affirmations')
 
 const gratitudes = [
     { category: cats[0], user: users[1], content: "I grateful to have a job which provides me with financial stability and opportunities for personal and professional growth."},

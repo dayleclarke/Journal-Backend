@@ -20,9 +20,9 @@ try {
   }
 
 // Create a Mongoose schema to define the strucutre of a model
-const entrySchema = new mongoose.Schema({ 
+const affirmationSchema = new mongoose.Schema({ 
   category: { type:  mongoose.ObjectId, ref: 'Category' }, 
-  content: { type:  String, required: [true, "Please add content to the entry."] }, 
+  content: { type:  String, required: [true, "Please add content to the affirmation."] }, 
   user: { type: mongoose.ObjectId, ref: 'User'}
 })
 
@@ -40,7 +40,7 @@ const categorySchema = new mongoose.Schema({
 
 
 // Create a Mongoose model based on the schema
-const EntryModel = mongoose.model('Entry', entrySchema)// Two parameters the first is a string which names the model the second is the schema. 
+const AffirmationModel = mongoose.model('Affirmation', affirmationSchema)// Two parameters the first is a string which names the model the second is the schema. 
 const GratitudeModel = mongoose.model('Gratitude', gratitudeSchema)
 
 
@@ -48,4 +48,4 @@ const CategoryModel = mongoose.model('Category', categorySchema)
 
 
 
-export { EntryModel, CategoryModel, GratitudeModel, dbClose } // We don't need to expose the schemas as we don't access them directly. 
+export { AffirmationModel, CategoryModel, GratitudeModel, dbClose } // We don't need to expose the schemas as we don't access them directly. 

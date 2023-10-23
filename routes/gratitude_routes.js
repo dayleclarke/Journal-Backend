@@ -40,7 +40,7 @@ router.post('/', async (req, res) => {
   }
 })
 
-// Update a single entry based on it's id
+// Update a single affirmation based on it's id
 router.put('/:id', async (req, res) => { // id is a restful parameter prefixed with a colon : 
   const { category, content, user} = req.body  //destrcutre out the fields you are expecting to get the category and content from the request body.  
   const categoryObject =  await CategoryModel.findOne({name: category })
@@ -48,7 +48,7 @@ router.put('/:id', async (req, res) => { // id is a restful parameter prefixed w
   const updatedGratitude = { category: categoryObject._id, user: userObject._id, content} //create a new variable to store the category and content with the same keys and values.  
   try {
     const gratitude = await GratitudeModel.findByIdAndUpdate(req.params.id, updatedGratitude, { returnDocument: 'after' }) // this take 3 parameters the first is the id which comes from the restful parameter, second is what you want to update it to and returnDocument after means the document is returned after it has been updated (default behaviour is before). 
-    if (gratitude) { // if the entry is truthy
+    if (gratitude) { // if the affirmation is truthy
       await gratitude.populate({ path: 'category', select: 'name' });
       await gratitude.populate({ path: 'user', select: 'username' }); 
       res.send(gratitude) 
@@ -57,22 +57,22 @@ router.put('/:id', async (req, res) => { // id is a restful parameter prefixed w
     }
   }
   catch (err) {
-    res.status(500).send({ error: err.message }); //If something else goes wrong other than being unable to find the entry such as if we lose network or database connection it will throw an exception. It will catch the error and return a 500 error. 
+    res.status(500).send({ error: err.message }); //If something else goes wrong other than being unable to find the affirmation such as if we lose network or database connection it will throw an exception. It will catch the error and return a 500 error. 
   }
 }) 
 
-// Delete a single entry based on it's id
+// Delete a single affirmation based on it's id
 router.delete('/:id', async (req, res) => {  
   try {
-    const entry = await EntryModel.findByIdAndDelete(req.params.id) 
-    if (entry) { // if the entry is truthy
+    const affirmation = await AffirmationModel.findByIdAndDelete(req.params.id) 
+    if (affirmation) { // if the affirmation is truthy
       res.sendStatus(204) 
     } else {
-        res.status(404).send({ error: 'Entry not found'}) // this error is returned if it is a valid id but doesn't match anything in the db
+        res.status(404).send({ error: 'Affirmation not found'}) // this error is returned if it is a valid id but doesn't match anything in the db
     }
   }
   catch (err) {
-    res.status(500).send({ error: err.message }); //If something else goes wrong other than being unable to find the entry such as if we lose network or database connection it will throw an exception. It will catch the error and return a 500 error. 
+    res.status(500).send({ error: err.message }); //If something else goes wrong other than being unable to find the affirmation such as if we lose network or database connection it will throw an exception. It will catch the error and return a 500 error. 
   }
 }) 
 
