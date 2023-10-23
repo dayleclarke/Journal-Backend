@@ -1,4 +1,3 @@
-import { CategoryModel, AffirmationModel } from '../db.js';
 import { UserModel } from '../models/userModel.js';
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'

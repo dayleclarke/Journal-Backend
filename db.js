@@ -37,15 +37,10 @@ const categorySchema = new mongoose.Schema({
   description: { type:  String, trim: true  }, 
 })
 
-
-
 // Create a Mongoose model based on the schema
 const AffirmationModel = mongoose.model('Affirmation', affirmationSchema)// Two parameters the first is a string which names the model the second is the schema. 
 const GratitudeModel = mongoose.model('Gratitude', gratitudeSchema)
 
-
 const CategoryModel = mongoose.model('Category', categorySchema)
-
-
 
 export { AffirmationModel, CategoryModel, GratitudeModel, dbClose } // We don't need to expose the schemas as we don't access them directly. 

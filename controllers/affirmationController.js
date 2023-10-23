@@ -1,17 +1,16 @@
 
 import { CategoryModel, AffirmationModel } from '../db.js';
 import { UserModel } from '../models/userModel.js';
-
 import asyncHandler from "express-async-handler"
 
-// @desc Get affirmations
-// @route Get /affirmations
-// @access Private
+// @desc Get all affirmations
+// @route GET /affirmations
+// @access Public
 const getAffirmations = asyncHandler(async (req, res) => 
   res.send(await AffirmationModel.find().populate({ path: 'category', select: ['name', 'description']}).populate({ path: 'user', select: ['username', 'email']})))
 
-// @desc Get affirmations
-// @route Get /affirmations
+// @desc Get users own affirmations
+// @route GET /affirmations/mine
 // @access Private
 const getMyAffirmations = asyncHandler(async (req, res) => {
   const myAffirmations = await AffirmationModel.find({user: req.user.id}).populate({ path: 'category', select: ['name', 'description']})
@@ -20,9 +19,9 @@ const getMyAffirmations = asyncHandler(async (req, res) => {
 
 // @desc Get one affirmation by id
 // @route Get /affirmations/:id
-// @access Private
+// @access Public
 const getOneAffirmation = asyncHandler(async (req, res) => {  
-  try { // We can find and update in one step. Fetch an object with that ID and update the affirmation
+  try { 
     const affirmation = await AffirmationModel.findById(req.params.id).populate('category').populate('user');
     if (affirmation) { 
        res.send(affirmation) 
@@ -37,103 +36,101 @@ const getOneAffirmation = asyncHandler(async (req, res) => {
 
 // Add a new affirmation 
 // @desc POST one affirmation
-// @route POST /affirmations/
-// @access Private 
+// @route POST /affirmations
+// @access Public
 const addAffirmation = asyncHandler(async (req, res) => { 
-    // Create a new affirmation object with values passed in from the request
-    if (!req.body.category) {
-      res.status(400)
-      throw new Error('Please enter a category field')
-    };
-    const { category, content, user} = req.body  //destrcutre out the fields you are expecting. 
-    const userObject =  await UserModel.findOne({username: user })
-    const categoryObject =  await CategoryModel.findOne({name: category })
-    const newAffirmation = { category: categoryObject, user: userObject, content} 
-    const insertedAffirmation = await AffirmationModel.create(newAffirmation) 
-    await insertedAffirmation.populate({ path: 'category', select: 'name' });
-    await insertedAffirmation.populate({ path: 'user', select: 'username' });
-    res.status(201).send(insertedAffirmation)
+  // Throw an error if the request is missing required fields
+  if (!req.body.category) {
+    res.status(400)
+    throw new Error('Please enter a category field')
+  };
+  if (!req.body.content) {
+    res.status(400)
+    throw new Error('Please enter a content field')
+  };
+
+  // Create a new affirmation object with values passed in from the request
+  const { category, content, user} = req.body  //destrcutre out the fields you are expecting. 
+  const userObject =  await UserModel.findOne({username: user }) // Here we are expecting the user to enter the username of the user
+  const categoryObject =  await CategoryModel.findOne({name: category }) // and the categroy name of the category
+  const newAffirmation = { category: categoryObject, user: userObject, content} // The entire user and category object is stored with the affirmation
+  const insertedAffirmation = await AffirmationModel.create(newAffirmation) 
+  await insertedAffirmation.populate({ path: 'category', select: 'name' });
+  await insertedAffirmation.populate({ path: 'user', select: 'username' });
+  res.status(201).send(insertedAffirmation)
 })
 
 // @desc Update one affirmation by id
 // @route PUT /affirmations/:id
-// @access Private
+// @access Private (only accessible by the author of the affirmation)
 
 const updateAffirmation = asyncHandler(async (req, res) => { 
+  // Throw an error if the id in the URL is not 24 characters long
   if (req.params.id.length !== 24) {
     res.status(400)
     throw new Error(`${req.params.id} is not a valid affirmation id.`)
   }
   
+  // Retrieve the original affirmation object based on its id
   const originalAffirmation = await AffirmationModel.findById(req.params.id)
+
+  // Throw an error if no affirmation exists with that id
   if (!originalAffirmation) {
     res.status(400)
     throw new Error(`No affirmation could be found with id:${req.params.id}.`)
   }
+
+  // Extract the fields from the request to update
   const { category, content } = req.body  
   const categoryObject =  await CategoryModel.findOne({name: category })
+
+  // Extract the user's information from their JWT token 
   const user = await UserModel.findById(req.user.id)
 
   if (!user) {
     res.status(401)
     throw new Error('User information not found')
   }
+  
   const updatedAffirmation = { category: categoryObject, user, content}
+  
   // Check loggedin user is the author of the affirmation
   if (originalAffirmation.user.toString() !== user.id) {
     res.status(401)
     throw new Error('User not authorised')
   }
-  
+  // If they were the original author then update the affirmation
   const finalAffirmation = await AffirmationModel.findByIdAndUpdate(req.params.id, updatedAffirmation, { returnDocument: 'after' }) // this take 3 parameters the first is the id which comes from the restful parameter, second is what you want to update it to and returnDocument after means the document is returned after it has been updated (default behaviour is before). 
   await finalAffirmation.populate({ path: 'category', select: 'name' });
   await finalAffirmation.populate({ path: 'user', select: 'username' }); 
   res.send(finalAffirmation) 
 })
-// const updateAffirmation = asyncHandler(async (req, res) => { 
-//   const { category, content, user} = req.body  
-//   const categoryObject =  await CategoryModel.findOne({name: category })
-//   const userObject =  await UserModel.findOne({username: user })
-//   const updatedAffirmation = { category: categoryObject, user: userObject, content}
-//   try {
-//     const affirmation = await AffirmationModel.findByIdAndUpdate(req.params.id, updatedAffirmation, { returnDocument: 'after' }) // this take 3 parameters the first is the id which comes from the restful parameter, second is what you want to update it to and returnDocument after means the document is returned after it has been updated (default behaviour is before). 
-//     if (affirmation) { // if the affirmation is truthy
-//       await affirmation.populate({ path: 'category', select: 'name' });
-//       await affirmation.populate({ path: 'user', select: 'username' }); 
-//       res.send(affirmation) 
-//     } else {
-//       res.status(400)
-//       throw new Error('Affirmation not found with that id')  
-//       //res.status(404).send({ error: 'Affirmation not found'}) // this error is returned if it is a valid id but doesn't match anything in the db
-//     }
-//   }
-//   catch (err) {
-//     res.status(500).send({ error: err.message }); //If something else goes wrong other than being unable to find the affirmation such as if we lose network or database connection it will throw an exception. It will catch the error and return a 500 error. 
-//   }
-// })
 
 // @desc Delete one affirmation based on id
 // @route DELETE /affirmations/:id
-// @access Private
+// @access Private (only accessible by the author of the affirmation)
 const deleteAffirmation = asyncHandler(async (req, res) => { 
+  // Throw an error if the id in the URL is not 24 characters long
   if (req.params.id.length !== 24){
     res.status(404)
     throw new Error(`${req.params.id} is not a valid user id.`)
   }
   
+  // Retrieve the affirmation based on the id provided in the URL
   const affirmation = await AffirmationModel.findById(req.params.id)
   if (!affirmation) {
     res.status(400)
     throw new Error(`No affirmation could be found with id:${req.params.id}.`)
   }
 
+  // Extract the user information from their JWT token
   const user = await UserModel.findById(req.user.id)
 
   if (!user) {
     res.status(401)
     throw new Error('User information not found')
   }
-
+  // Throw an error if the user is not the original user who posted the affirmation
   if (affirmation.user.toString() !== user.id) {
     res.status(401)
     throw new Error('User not authorised')
